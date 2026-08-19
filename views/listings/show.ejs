@@ -1,0 +1,193 @@
+<% layout('/layouts/boilerplate') -%>
+
+<style>
+.wishlist-btn-show{
+  background: rgba(255,255,255,0.85);
+  border: none;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.wishlist-btn-show i{
+  color: #fe424d;
+}
+.share-btn{
+  border-radius: 25px;
+}
+.booking-box{
+  border: 1px solid #ddd;
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+.similar-card img{
+  height: 12rem;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .booking-box{
+    margin-top: 1.5rem;
+  }
+}
+</style>
+
+<div class="row mt-3">
+    <div class="col-lg-8 offset-lg-2 col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h3><%= listing.title %></h3>
+            <% if(currUser) { %>
+                <form action="/listings/<%= listing._id %>/wishlist" method="POST">
+                    <button class="wishlist-btn-show" type="submit">
+                        <% if(inWishlist) { %>
+                            <i class="fa-solid fa-heart"></i>
+                        <% } else { %>
+                            <i class="fa-regular fa-heart"></i>
+                        <% } %>
+                    </button>
+                </form>
+            <% } %>
+        </div>
+    </div>
+
+    <div class="col-lg-6 col-12 offset-lg-2">
+        <div class="card show-card listing-card">
+            <img src="<%= listing.image.url %>" class="card-img-top show-img" alt="listing_image" />
+            <div class="card-body">
+                <p class="card-text">
+                    Owned by
+                    <i><%= listing.owner.username %></i>
+                </p>
+
+                <p class="card-text"><%= listing.description %></p>
+                <p class="card-text">&#8377; <%= listing.price.toLocaleString("en-IN") %></p>
+                <p class="card-text"><%= listing.location %></p>
+                <p class="card-text"><%= listing.country %></p>
+
+                <% if(avgRating > 0) { %>
+                    <p class="card-text"><i class="fa-solid fa-star"></i> <%= avgRating %> (<%= listing.reviews.length %> reviews)</p>
+                <% } else { %>
+                    <p class="card-text text-muted">No reviews yet</p>
+                <% } %>
+
+                <button class="btn btn-outline-dark share-btn mt-2" onclick="shareListing()">
+                    <i class="fa-solid fa-share-nodes"></i> Share
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-12 offset-lg-2 mt-lg-0 mt-3">
+        <div class="booking-box">
+            <h5>Book your stay</h5>
+            <form>
+                <div class="mb-2">
+                    <label class="form-label">Check-in</label>
+                    <input type="date" class="form-control" name="checkin">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Check-out</label>
+                    <input type="date" class="form-control" name="checkout">
+                </div>
+                <button type="button" class="btn btn-dark w-100 mt-2" disabled>Reserve (coming soon)</button>
+            </form>
+        </div>
+    </div>
+
+    <br>
+
+    <% if(currUser && currUser._id.equals(listing.owner._id)) { %>
+        <div class="col-lg-6 offset-lg-2 col-12 btns mt-3">
+            <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark col-1 edt-btn">Edit</a>
+            <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE">
+                <button class="btn btn-dark">Delete</button>
+            </form>
+        </div>
+    <% } %>
+
+    <div class="col-lg-8 offset-lg-2 col-12 mb-3">
+        <hr>
+        <% if(currUser) { %>
+            <h4>Leave a Review</h4>
+            <form action="/listings/<%= listing._id %>/reviews" method="POST" novalidate class="needs-validation">
+                <div class="mb-3 mt-3">
+                    <label class="form-label">Rating</label>
+                    <fieldset class="starability-slot">
+                        <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="1" checked aria-label="No rating." />
+                        <input type="radio" id="first-rate1" name="review[rating]" value="1" />
+                        <label for="first-rate1" title="Terrible">1 star</label>
+                        <input type="radio" id="first-rate2" name="review[rating]" value="2" />
+                        <label for="first-rate2" title="Not good">2 stars</label>
+                        <input type="radio" id="first-rate3" name="review[rating]" value="3" />
+                        <label for="first-rate3" title="Average">3 stars</label>
+                        <input type="radio" id="first-rate4" name="review[rating]" value="4" />
+                        <label for="first-rate4" title="Very good">4 stars</label>
+                        <input type="radio" id="first-rate5" name="review[rating]" value="5" />
+                        <label for="first-rate5" title="Amazing">5 stars</label>
+                    </fieldset>
+                </div>
+
+                <div class="mb-3 mt-3">
+                    <label for="comment" class="form-label">Comments</label>
+                    <textarea name="review[comment]" id="comment" cols="30" rows="5" class="form-control" required></textarea>
+                    <div class="invalid-feedback">Please add some comments for review</div>
+                </div>
+
+                <button class="btn btn-outline-dark">Submit</button>
+            </form>
+            <hr>
+        <% } %>
+
+        <p><b>All Reviews</b></p>
+        <div class="row">
+            <% for(review of listing.reviews){ %>
+                <div class="card col-md-5 col-12 ms-md-3 mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">@<%= review.author.username %></h5>
+                        <p class="starability-result card-text" data-rating="<%= review.rating %>"></p>
+                        <p class="card-text"><%= review.comment %></p>
+
+                        <form class="mb-3" action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE" method="POST">
+                            <button class="btn btn-sm btn-dark">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            <% } %>
+        </div>
+
+        <% if(similarListings.length > 0) { %>
+            <hr>
+            <p><b>You might also like</b></p>
+            <div class="row row-cols-lg-4 row-cols-md-2 row-cols-sm-1">
+                <% for(let sim of similarListings) { %>
+                    <div class="col mb-3">
+                        <a href="/listings/<%= sim._id %>" class="listing-link">
+                            <div class="card similar-card">
+                                <img src="<%= sim.image.url %>" class="card-img-top" alt="listing_image"/>
+                                <div class="card-body">
+                                    <p class="card-text"><b><%= sim.title %></b><br/>&#8377; <%= sim.price.toLocaleString("en-IN") %>/night</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                <% } %>
+            </div>
+        <% } %>
+
+    </div>
+</div>
+
+<script>
+function shareListing(){
+    const url = window.location.href;
+    if(navigator.share){
+        navigator.share({ title: "<%= listing.title %>", url: url });
+    } else {
+        navigator.clipboard.writeText(url);
+        alert("Link copied to clipboard!");
+    }
+}
+</script>

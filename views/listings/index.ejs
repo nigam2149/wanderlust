@@ -1,0 +1,250 @@
+<% layout('/layouts/boilerplate') -%>
+
+<style>
+  #filters{
+    display:flex;
+    flex-wrap:wrap;
+    align-items: center;
+  }
+  .filter{
+    text-align: center;
+    margin-right: 2rem;
+    margin-top: 2rem;
+    opacity: 0.7;
+  }
+  .filter:hover{
+    opacity: 1;
+    cursor: pointer;
+  }
+  .filter p{
+    font-size: 0.8rem;
+  }
+  .tax-info{
+    display:none;
+  }
+  .tax-toggle{
+    border: 1px solid black;
+    border-radius: 1rem;
+    height:3.25rem;
+    padding: 1rem;
+    margin-left: 2rem;
+    display: flex;
+    align-items: center;
+  }
+  .filter-link{
+    text-decoration: none;
+    color: inherit;
+  }
+  .sort-price-bar{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    margin-top: 1rem;
+  }
+  .sort-price-bar .form-control, .sort-price-bar select{
+    max-width: 150px;
+  }
+  .wishlist-btn{
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255,255,255,0.85);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+  }
+  .wishlist-btn i{
+    color: #fe424d;
+  }
+  .rating-badge{
+    font-size: 0.85rem;
+    color: #444;
+  }
+  .listing-card-wrapper{
+    position: relative;
+  }
+
+  /* responsiveness */
+  @media (max-width: 768px) {
+    #filters{
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      padding-bottom: 0.5rem;
+    }
+    .filter{
+      margin-right: 1rem;
+      margin-top: 1rem;
+      flex-shrink: 0;
+    }
+    .tax-toggle{
+      margin-left: 0;
+      margin-top: 1rem;
+    }
+    .sort-price-bar{
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .sort-price-bar .form-control, .sort-price-bar select{
+      max-width: 100%;
+    }
+  }
+</style>
+
+<div id="filters">
+  <a href="/listings?category=trending" class="filter-link">
+  <div class="filter">
+    <div><i class="fa-solid fa-fire"></i></div>
+    <p>Trending</p>
+  </div>
+  </a>
+  <a href="/listings?category=rooms" class="filter-link">
+  <div class="filter">
+    <div><i class="fa-solid fa-bed"></i></div>
+    <p>Rooms</p>
+  </div>
+  </a>
+  <a href="/listings?category=iconic-cities" class="filter-link">
+  <div class="filter">
+    <div><i class="fa-solid fa-mountain-city"></i></div>
+    <p>Iconic Cities</p>
+  </div>
+  </a>
+  <a href="/listings?category=mountains" class="filter-link">
+  <div class="filter">
+    <div><i class="fa-solid fa-mountain"></i></div>
+    <p>Mountains</p>
+  </div>
+  </a>
+  <a href="/listings?category=castles" class="filter-link">
+    <div class="filter">
+    <div><i class="fa-brands fa-fort-awesome"></i></div>
+    <p>Castles</p>
+  </div>
+  </a>
+  <a href="/listings?category=pools" class="filter-link">
+  <div class="filter">
+    <div><i class="fa-solid fa-person-swimming"></i></div>
+    <p>Amazing Pools</p>
+  </div>
+  </a>
+  <a href="/listings?category=camping" class="filter-link">
+    <div class="filter">
+    <div><i class="fa-solid fa-campground"></i></div>
+    <p>Camping</p>
+  </div>
+  </a>
+  <a href="/listings?category=farms" class="filter-link">
+    <div class="filter">
+    <div><i class="fa-solid fa-cow"></i></div>
+    <p>Farms</p>
+  </div>
+  </a>
+  <a href="/listings?category=arctic" class="filter-link">
+  <div class="filter">
+    <div><i class="fa-solid fa-snowflake"></i></div>
+    <p>Arctic</p>
+  </div>
+  </a>
+  <a href="/listings?category=domes" class="filter-link">
+    <div class="filter">
+    <div><i class="fa-solid fa-igloo"></i></div>
+    <p>Domes</p>
+    </div>
+  </a>
+  <a href="/listings?category=boats" class="filter-link">
+  <div class="filter">
+    <div><i class="fa-solid fa-ship"></i></div>
+    <p>Boats</p>
+  </div>
+  </a>
+
+  <div class="tax-toggle">
+    <div class="form-check-reverse form-switch">
+      <input 
+       class="form-check-input" 
+       type="checkbox" 
+       role="switch" 
+       id="flexswitchCheckDefault">
+     <label class="form-check-label" for="flexswitchCheckDefault">Display total after taxes</label>
+    </div>
+  </div>
+</div>
+
+<form class="sort-price-bar" method="GET" action="/listings">
+  <% if(category) { %><input type="hidden" name="category" value="<%= category %>"><% } %>
+  <% if(search) { %><input type="hidden" name="search" value="<%= search %>"><% } %>
+
+  <input type="number" name="minPrice" class="form-control" placeholder="Min price" value="<%= typeof minPrice !== 'undefined' ? minPrice : '' %>">
+  <input type="number" name="maxPrice" class="form-control" placeholder="Max price" value="<%= typeof maxPrice !== 'undefined' ? maxPrice : '' %>">
+
+  <select name="sort" class="form-select">
+    <option value="">Sort by</option>
+    <option value="price_asc" <%= sort === 'price_asc' ? 'selected' : '' %>>Price: Low to High</option>
+    <option value="price_desc" <%= sort === 'price_desc' ? 'selected' : '' %>>Price: High to Low</option>
+  </select>
+
+  <button type="submit" class="btn btn-dark">Apply</button>
+</form>
+
+<div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mt-3">
+  <% if(allListings.length === 0) { %>
+    <div class="col-12 d-flex justify-content-center align-items-center text-center" style="min-height: 60vh; width: 100%;">
+      <h4>No listings found</h4>
+    </div>
+  <% } %>
+
+  <% for(let listing of allListings) { %>
+    <div class="col listing-card-wrapper">
+      <% if(currUser) { %>
+        <form action="/listings/<%= listing._id %>/wishlist" method="POST">
+          <button class="wishlist-btn" type="submit">
+            <% if(wishlist.includes(listing._id.toString())) { %>
+              <i class="fa-solid fa-heart"></i>
+            <% } else { %>
+              <i class="fa-regular fa-heart"></i>
+            <% } %>
+          </button>
+        </form>
+      <% } %>
+      <a href="/listings/<%= listing._id %>" class="listing-link">
+        <div class="card listing-card">
+          <img src="<%= listing.image.url %>" class="card-img-top" alt="listing_image" style="height: 20rem"/>
+          <div class="card-img-overlay"></div>
+          <div class="card-body">
+            <p class="card-text">
+              <b><%= listing.title %></b> <br/>
+              &#8377; <%= listing.price.toLocaleString("en-IN") %>/night
+              <i class="tax-info"> &nbsp; &nbsp;+18% GST</i>
+              <br/>
+              <% if(listing.reviewCount > 0) { %>
+                <span class="rating-badge"><i class="fa-solid fa-star"></i> <%= listing.avgRating %> (<%= listing.reviewCount %> reviews)</span>
+              <% } else { %>
+                <span class="rating-badge">No reviews yet</span>
+              <% } %>
+            </p>
+          </div>
+        </div>
+      </a>
+    </div>
+  <% } %>
+</div>
+
+<script>
+let taxSwitch=document.getElementById("flexswitchCheckDefault");
+  taxSwitch.addEventListener("click",()=>{
+    let taxInfo=document.getElementsByClassName("tax-info");
+    for(info of taxInfo){
+      if(info.style.display != "inline"){
+        info.style.display="inline";
+      }else{
+        info.style.display="none";
+      } 
+    }
+  });
+</script>
