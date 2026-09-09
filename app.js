@@ -20,7 +20,6 @@ const listingRouter=require("./routes/listing.js");
 const reviewRouter=require("./routes/review.js");
 const userRouter=require("./routes/user.js");
 
-// const MONGO_URL="mongodb://127.0.0.1:27017/wanderlust";
 const dbUrl=process.env.ATLASDB_URL;
 
 main().then(()=>{
@@ -37,6 +36,7 @@ async function main(){
 app.set("view engine","ejs");
 app.set("views",path.join(__dirname,"views"));
 app.use(express.urlencoded({extended:true}));
+app.use(express.json());
 app.use(methodOverride("_method"));
 app.engine("ejs",ejsMate);
 app.use(express.static(path.join(__dirname,"/public")));
@@ -51,7 +51,7 @@ const store=MongoStore.create({
 
 store.on("error", (err)=>{
     console.log("ERROR in MONGO SESSION STORE",err);
-})
+});
 
 const sessionOptions = {
     store,
@@ -64,11 +64,6 @@ const sessionOptions = {
        httpOnly:true,
     },
 };
-
-// root API
-// app.get("/",(req,res)=>{
-//     res.send("Hi,I am root");
-// });
 
 app.get("/",(req,res)=>{
     res.redirect("/listings");
@@ -89,16 +84,7 @@ app.use((req,res,next)=>{
     res.locals.error=req.flash("error");
     res.locals.currUser=req.user;
     next();
-})
-
-// app.get("/demouser",async(req,res)=>{
-//     let fakeUser=new User({
-//         email:"Nigam@gmail.com",
-//         username:"Nigam-Mishra"
-//     });
-//     let registeredUser=await User.register(fakeUser,"helloworld");
-//     res.send(registeredUser);
-// });
+});
 
 app.use("/listings",listingRouter);
 app.use("/listings/:id/reviews",reviewRouter);
@@ -112,10 +98,8 @@ app.use((err,req,res,next)=>{
     console.log(err);
     let {statusCode=500,message="Something Went Wrong"}=err;
     res.status(statusCode).render("error.ejs",{message});
-    // res.status(statusCode).send(message);
 });
 
 app.listen(8080,()=>{
     console.log("server is lintening to port 8080");
 });
- 
